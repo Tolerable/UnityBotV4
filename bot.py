@@ -11,6 +11,12 @@ from memory_manager import MemoryManager
 from commands import setup_commands
 from data_manager import DataManager
 
+# Claude-to-Claude communication
+from claude_api import start_api_server, set_bot_instance, record_channel_message
+
+# Channel ID for Claude-to-Claude chat (shared between OLLAMABOT and Unity)
+CLAUDE_CHAT_CHANNEL_ID = os.environ.get('CLAUDE_CHAT_CHANNEL_ID', '1389349100000120955')
+
 if not os.path.exists("logs"):
     os.makedirs("logs")
 logging.basicConfig(filename="logs/application.log", level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -52,10 +58,23 @@ async def on_ready():
     asyncio.create_task(wipe_logs_periodically())
     asyncio.create_task(check_for_updates_periodically())
 
+    # Start Claude API server for Claude-to-Claude communication
+    start_api_server()
+    set_bot_instance(bot)
+    print(f"Claude chat channel: {CLAUDE_CHAT_CHANNEL_ID}")
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
+
+    # Record messages from Claude chat channel (for Claude-to-Claude communication)
+    if str(message.channel.id) == CLAUDE_CHAT_CHANNEL_ID:
+        record_channel_message(message)
+        # Don't process Claude chat messages as regular bot commands
+        if message.author.bot:
+            return
+
     if message.guild and config.allowed_channels and str(message.channel.id) not in config.allowed_channels:
         logging.info(
             f"Ignoring message in unauthorized channel {message.channel.id}"

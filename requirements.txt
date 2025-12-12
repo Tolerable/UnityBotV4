@@ -2,3 +2,5 @@ discord.py>=2.0.0
 aiohttp
 aiofiles
 python-dotenv
+flask
+flask-cors
