@@ -34,24 +34,23 @@ class Config:
             "Successfully loaded discord token (length: %d)", len(self.discord_token)
         )
 
-        # Load and validate Pollinations token
+        # Load Pollinations token (OPTIONAL - bot can run without it)
         self.pollinations_token = os.getenv("POLLINATIONS_TOKEN")
         if self.pollinations_token:
             self.pollinations_token = self.pollinations_token.strip()
             logger.debug(f"Pollinations token length: {len(self.pollinations_token)}")
-            if not re.match(r'^[A-Za-z0-9]{16}$', self.pollinations_token):  # Assuming 16-char alphanumeric format from example
-                logger.error(
-                    "Invalid Pollinations token format (length: %d)",
+            if not re.match(r'^[A-Za-z0-9]{16}$', self.pollinations_token):
+                logger.warning(
+                    "Pollinations token format may be invalid (length: %d) - AI features may not work",
                     len(self.pollinations_token),
                 )
-                raise ValueError("Invalid Pollinations token format. Ensure it's correct and no invalid characters.")
+            logger.info(
+                "Successfully loaded pollinations token (length: %d)",
+                len(self.pollinations_token),
+            )
         else:
-            logger.error("POLLINATIONS_TOKEN not found in environment variables")
-            raise ValueError("POLLINATIONS_TOKEN not found in environment variables")
-        logger.info(
-            "Successfully loaded pollinations token (length: %d)",
-            len(self.pollinations_token),
-        )
+            logger.warning("POLLINATIONS_TOKEN not set - AI chat features disabled, Claude chat still works")
+            self.pollinations_token = None
 
         # Bot configuration
         self.default_model = "unity"
@@ -61,7 +60,7 @@ class Config:
         except FileNotFoundError:
             logger.error("system_instructions.txt not found")
             raise FileNotFoundError("system_instructions.txt not found")
-        self.api_url = f"https://text.pollinations.ai/openai?token={self.pollinations_token}"
+        self.api_url = f"https://text.pollinations.ai/openai?token={self.pollinations_token}" if self.pollinations_token else None
         self.models_url = "https://text.pollinations.ai/models"
         self.max_history = 20
         self.max_memories = 5
