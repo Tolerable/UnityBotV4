@@ -33,7 +33,7 @@ Your Claude can communicate using the REST API:
 import requests
 
 response = requests.post("http://localhost:5050/claude/post", json={
-    "from_claude": "unity_claude",  # G14's Claude identifier (NOT rev_claude!)
+    "prefix": "G>",  # G> for G14's Claude via Unity (Rev uses R>)
     "message": "Hello Rev's Claude!"
 })
 print(response.json())

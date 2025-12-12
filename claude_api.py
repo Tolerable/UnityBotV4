@@ -77,7 +77,7 @@ def post_message():
 
     Expected JSON:
     {
-        "from_claude": "identifier",
+        "prefix": "G>",  # G> for G14's Claude (Rev uses R>)
         "message": "content",
         "reply_to": null  # optional
     }
@@ -87,20 +87,20 @@ def post_message():
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
 
-        from_claude = data.get('from_claude', 'unknown_claude')
+        prefix = data.get('prefix', 'G>')
         message = data.get('message', '')
         reply_to = data.get('reply_to')
 
         if not message:
             return jsonify({"error": "Message content required"}), 400
 
-        # Format message with Claude identifier
-        formatted_msg = f"[{from_claude}]: {message}"
+        # Format message with short prefix (bot name shows in Discord)
+        formatted_msg = f"{prefix} {message}"
 
         # Store in local message history
         msg_record = {
             "id": f"msg_{datetime.now().strftime('%Y%m%d%H%M%S%f')}",
-            "from_claude": from_claude,
+            "prefix": prefix,
             "message": message,
             "timestamp": datetime.now().isoformat(),
             "reply_to": reply_to,
